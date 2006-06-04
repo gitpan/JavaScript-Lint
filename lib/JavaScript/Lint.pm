@@ -1,4 +1,4 @@
-# @(#) $Id: Lint.pm 1147 2006-06-02 15:04:40Z dom $
+# @(#) $Id: Lint.pm 1153 2006-06-04 10:02:40Z dom $
 
 package JavaScript::Lint;
 
@@ -12,7 +12,7 @@ use base qw( Exporter );
 
 our @EXPORT = qw( jslint );
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 {
     my $ctx;
@@ -31,25 +31,33 @@ our $VERSION = '0.01';
 sub fix_line_and_char_numbers {
     my ( $err ) = @_;
     my %new_err;
-    @new_err{keys %$err} = values %$err;
-    $new_err{line}++;
-    $new_err{character}++;
+    @new_err{ keys %$err } = values %$err;
+    $new_err{ line }++;
+    $new_err{ character }++;
     return \%new_err;
 }
 
+sub make_fatal_error {
+    my ( $err ) = @_;
+    my %newerr = %$err;
+    $newerr{ id }     = '(fatal)';
+    $newerr{ reason } = 'Cannot proceed.';
+    return \%newerr;
+}
+
 sub jslint {
-    my ( $js_source ) = @_;
+    my ( $js_source, %opt ) = @_;
     croak "usage: jslint(js_source)" unless $js_source;
     my $ctx = get_context();
-    if ( $ctx->call( 'jslint', $js_source ) ) {
+    if ( $ctx->call( 'jslint', $js_source, \%opt ) ) {
         return;
     }
     else {
-        return
-            map { fix_line_and_char_numbers( $_ ) }
-            # Sometimes we're getting back nulls...
-            grep { ref($_) eq 'HASH' }
-            @{ $ctx->eval( "jslint.errors" ) };
+        my @errors = @{ $ctx->eval( "jslint.errors" ) };
+        if ( !defined $errors[-1] ) {
+            $errors[-1] = make_fatal_error( $errors[-2] );
+        }
+        return map { fix_line_and_char_numbers( $_ ) } @errors;
     }
 }
 
@@ -83,9 +91,9 @@ You may be more interested in the command line interface, L<jslint>.
 
 =item jslint()
 
-This takes one parameter: a string containing JavaScript code.  It
-returns a list of errors.  If there are no problems, the empty list
-will be returned.  Each error is a hash reference containing these keys:
+This takes one mandatory parameter: a string containing JavaScript code.
+It returns a list of errors. If there are no problems, an empty list will
+be returned. Each error is a hash reference containing these keys:
 
 =over 4
 
@@ -114,6 +122,48 @@ A copy of the line of code that produced the error.
 In addition to pure JavaScript, you can also pass in a piece of HTML
 code.  This will be parsed and any JavaScript found within will be
 checked in the usual manner.
+
+You can optionally pass in a second parameter to influence how JSLint works.
+The following keys are used.  All take a boolean value, and each one is false
+by default.
+
+=over 4
+
+=item I<browser>
+
+Predefine the standard browser global variables.
+
+=item I<cap>
+
+Allow upper case HTML.
+
+=item I<debug>
+
+Allow B<debugger> statements.
+
+=item I<evil>
+
+Allow use of B<eval>.
+
+=item I<jscript>
+
+Allow JScript deviations.
+
+=item I<laxLineEnd>
+
+Don't check line breaks.
+
+=item I<passfail>
+
+Stop on the first error.
+
+=item I<plusplus>
+
+Disallow post-increment expressions.
+
+=item I<undef>
+
+Report on variables that are undefined when they are first used.
 
 =back
 
