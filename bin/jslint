@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# @(#) $Id: jslint 1155 2006-06-04 10:23:40Z dom $
+# @(#) $Id: jslint 1160 2006-06-04 10:49:10Z dom $
 
 use strict;
 use warnings;
@@ -63,13 +63,14 @@ sub version {
 
 my %opts;
 GetOptions( \%opts, 'help', 'version', map { "$_!" } sort keys %all_options );
-usage if $opts{ help };
+usage   if $opts{ help };
 version if $opts{ version };
 
 # Read STDIN unless args present.
 @ARGV = ( '-' ) unless @ARGV;
 
-exit !grep { lint_file( $_, %opts ) } @ARGV;
+my @error_files = grep { lint_file( $_, %opts ) } @ARGV;
+exit( @error_files > 0 ? 1 : 0 );
 
 __END__
 

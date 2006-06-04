@@ -1,4 +1,4 @@
-# @(#) $Id: Lint.pm 1153 2006-06-04 10:02:40Z dom $
+# @(#) $Id: Lint.pm 1159 2006-06-04 10:44:01Z dom $
 
 package JavaScript::Lint;
 
@@ -12,7 +12,7 @@ use base qw( Exporter );
 
 our @EXPORT = qw( jslint );
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 {
     my $ctx;
@@ -47,7 +47,8 @@ sub make_fatal_error {
 
 sub jslint {
     my ( $js_source, %opt ) = @_;
-    croak "usage: jslint(js_source)" unless $js_source;
+    croak "usage: jslint(js_source)"
+      unless defined $js_source;
     my $ctx = get_context();
     if ( $ctx->call( 'jslint', $js_source, \%opt ) ) {
         return;

@@ -1,6 +1,6 @@
 ---
 name: JavaScript-Lint
-version: 0.02
+version: 0.03
 author:
   - 'Dominic Mitchell <cpan (at) happygiraffe.net>'
 abstract: Check JavaScript code for problems
@@ -14,7 +14,7 @@ requires:
 provides:
   JavaScript::Lint:
     file: lib/JavaScript/Lint.pm
-    version: 0.02
+    version: 0.03
 generated_by: Module::Build version 0.2801
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html
